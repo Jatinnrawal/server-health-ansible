@@ -1,0 +1,70 @@
+---
+- name: Prepare Company Web Server
+  hosts: webservers
+  become: true
+
+  vars:
+    web_port: 80
+    server_name: company.local
+    web_root: /var/www/company
+
+    app_name: company-web
+    environment: production  
+
+    packages:
+      - nginx
+      - curl
+
+  tasks:
+
+    - name: Display server information
+      debug:
+        msg:
+          - "Hostname: {{ ansible_hostname }}"
+          - "OS: {{ ansible_distribution }}"
+          - "OS Family: {{ ansible_os_family }}"
+          - "IP: {{ ansible_default_ipv4.address }}"
+
+    - name: Install required packages
+      apt:
+        name: "{{ packages }}"
+        state: present
+        update_cache: true
+      when: ansible_os_family == "Debian"
+
+    - name: Create application user
+      user:
+        name: companyapp
+        system: true
+        state: present
+
+    - name: Create application directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: companyapp
+        mode: '0755'
+      loop:
+        - "{{ web_root }}"
+        - "/var/log/companyapp"
+        - "/etc/companyapp"
+
+    - name: Deploy company webpage
+      template:
+        src : templates/index.html.j2
+        dest: "{{ web_root }}/index.html"
+        owner: companyapp
+        mode: '0644' 
+
+    - name: Deploy nginx configuration
+      template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/sites-available/company
+      notify: Restart nginx    
+
+  handlers:
+
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
