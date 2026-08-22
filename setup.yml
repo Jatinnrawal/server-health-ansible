@@ -9,7 +9,7 @@
     web_root: /var/www/company
 
     app_name: company-web
-    environment: production  
+    environment: {{ app_environment }}</p>  
 
     packages:
       - nginx
