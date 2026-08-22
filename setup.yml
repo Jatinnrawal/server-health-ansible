@@ -60,7 +60,18 @@
       template:
         src: templates/nginx.conf.j2
         dest: /etc/nginx/sites-available/company
-      notify: Restart nginx    
+      notify: Restart nginx
+
+    - name: Enable company website
+      file:
+        src: /etc/nginx/sites-available/company
+        dest: /etc/nginx/sites-enabled/company
+        state: link
+      notify: Restart nginx
+
+    - name: Validate nginx configuration
+      command: nginx -t
+      changed_when: false    
 
   handlers:
 
