@@ -9,7 +9,7 @@
     web_root: /var/www/company
 
     app_name: company-web
-    environment: {{ app_environment }}</p>  
+    app_environment: production
 
     packages:
       - nginx
@@ -51,27 +51,16 @@
 
     - name: Deploy company webpage
       template:
-        src : templates/index.html.j2
+        src: templates/index.html.j2
         dest: "{{ web_root }}/index.html"
         owner: companyapp
-        mode: '0644' 
+        mode: '0644'
 
     - name: Deploy nginx configuration
       template:
         src: templates/nginx.conf.j2
         dest: /etc/nginx/sites-available/company
       notify: Restart nginx
-
-    - name: Enable company website
-      file:
-        src: /etc/nginx/sites-available/company
-        dest: /etc/nginx/sites-enabled/company
-        state: link
-      notify: Restart nginx
-
-    - name: Validate nginx configuration
-      command: nginx -t
-      changed_when: false    
 
   handlers:
 
